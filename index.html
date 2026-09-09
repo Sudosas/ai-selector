@@ -55,18 +55,33 @@
             font-weight: 300;
         }
 
+        .section-title {
+            font-size: 1rem;
+            color: var(--accent);
+            margin: 20px 0 12px 0;
+            text-align: center;
+            font-weight: 600;
+        }
+
         .grid {
             display: grid;
-            grid-template-columns: repeat(2, 1fr);
-            gap: 15px;
-            margin-bottom: 25px;
+            grid-template-columns: repeat(3, 1fr);
+            gap: 10px;
+            margin-bottom: 15px;
+        }
+
+        .grid-ai {
+            display: grid;
+            grid-template-columns: repeat(3, 1fr);
+            gap: 10px;
+            margin-bottom: 20px;
         }
 
         .card {
             background: linear-gradient(135deg, rgba(255, 255, 255, 0.05) 0%, rgba(255, 255, 255, 0.02) 100%);
             border: 2px solid rgba(215, 177, 143, 0.2);
             border-radius: 12px;
-            padding: 20px 15px;
+            padding: 15px 12px;
             text-align: center;
             cursor: pointer;
             transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
@@ -75,19 +90,20 @@
             opacity: 0;
             display: flex;
             flex-direction: column;
-            gap: 10px;
-            min-height: 140px;
+            gap: 8px;
+            min-height: 130px;
             justify-content: center;
         }
 
-        .card:nth-child(1) { animation-delay: 0.1s; }
-        .card:nth-child(2) { animation-delay: 0.15s; }
-        .card:nth-child(3) { animation-delay: 0.2s; }
-        .card:nth-child(4) { animation-delay: 0.25s; }
-        .card:nth-child(5) { animation-delay: 0.3s; }
-        .card:nth-child(6) { animation-delay: 0.35s; }
-        .card:nth-child(7) { animation-delay: 0.4s; }
-        .card:nth-child(8) { animation-delay: 0.45s; }
+        .card:nth-child(1) { animation-delay: 0.05s; }
+        .card:nth-child(2) { animation-delay: 0.1s; }
+        .card:nth-child(3) { animation-delay: 0.15s; }
+        .card:nth-child(4) { animation-delay: 0.2s; }
+        .card:nth-child(5) { animation-delay: 0.25s; }
+        .card:nth-child(6) { animation-delay: 0.3s; }
+        .card:nth-child(7) { animation-delay: 0.35s; }
+        .card:nth-child(8) { animation-delay: 0.4s; }
+        .card:nth-child(9) { animation-delay: 0.45s; }
 
         .card:hover {
             border-color: var(--accent);
@@ -97,7 +113,7 @@
         }
 
         .card-icon {
-            font-size: 2.2rem;
+            font-size: 2rem;
             display: inline-block;
             transition: transform 0.3s ease;
         }
@@ -107,29 +123,30 @@
         }
 
         .card-title {
-            font-size: 1.1rem;
+            font-size: 1rem;
             color: var(--accent);
             font-weight: 600;
+            line-height: 1.2;
         }
 
         .card-description {
-            font-size: 0.75rem;
+            font-size: 0.7rem;
             color: var(--light);
-            line-height: 1.3;
+            line-height: 1.2;
         }
 
         .card-link {
             display: inline-block;
             background: linear-gradient(135deg, var(--accent) 0%, #c89a7c 100%);
             color: var(--dark);
-            padding: 7px 18px;
-            border-radius: 20px;
+            padding: 6px 14px;
+            border-radius: 16px;
             text-decoration: none;
             font-weight: 600;
             transition: all 0.2s ease;
             border: none;
             cursor: pointer;
-            font-size: 0.8rem;
+            font-size: 0.75rem;
             margin-top: auto;
         }
 
@@ -167,8 +184,10 @@
         .footer {
             text-align: center;
             color: var(--light);
-            font-size: 0.8rem;
+            font-size: 0.75rem;
             opacity: 0.7;
+            padding-top: 15px;
+            border-top: 1px solid rgba(215, 177, 143, 0.1);
         }
 
         @media (max-width: 380px) {
@@ -177,20 +196,20 @@
             }
 
             .card {
-                padding: 15px 10px;
-                min-height: 130px;
+                padding: 12px 10px;
+                min-height: 120px;
             }
 
             .card-icon {
-                font-size: 2rem;
+                font-size: 1.8rem;
             }
 
             .card-title {
-                font-size: 1rem;
+                font-size: 0.9rem;
             }
 
             .card-description {
-                font-size: 0.7rem;
+                font-size: 0.65rem;
             }
         }
     </style>
@@ -202,7 +221,8 @@
             <p>Вибери нейронку</p>
         </div>
 
-        <div class="grid">
+        <div class="section-title">AI Нейронки</div>
+        <div class="grid-ai">
             <div class="card">
                 <div class="card-icon">🔷</div>
                 <div class="card-title">ChatGPT</div>
@@ -227,7 +247,7 @@
             <div class="card">
                 <div class="card-icon">🚀</div>
                 <div class="card-title">DeepSeek</div>
-                <div class="card-description">Китайська AI</div>
+                <div class="card-description">Китайська</div>
                 <a href="https://www.deepseek.com" target="_blank" class="card-link">Відкрити</a>
             </div>
 
@@ -257,6 +277,23 @@
                 <div class="card-title">Grok</div>
                 <div class="card-description">xAI</div>
                 <a href="https://grok.x.com" target="_blank" class="card-link">Відкрити</a>
+            </div>
+
+            <div class="card">
+                <div class="card-icon">🌐</div>
+                <div class="card-title">Cohere</div>
+                <div class="card-description">Command</div>
+                <a href="https://cohere.ai" target="_blank" class="card-link">Відкрити</a>
+            </div>
+        </div>
+
+        <div class="section-title">Додатки</div>
+        <div class="grid">
+            <div class="card">
+                <div class="card-icon">📚</div>
+                <div class="card-title">Галицький</div>
+                <div class="card-description">Розклад коледжу</div>
+                <a href="https://gi.edu.ua/rozklad/item/1537-viddilennia-kompiuternykh-tekhnolohii" target="_blank" class="card-link">Перейти</a>
             </div>
         </div>
 
