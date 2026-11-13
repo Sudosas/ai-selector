@@ -1,0 +1,484 @@
+<!DOCTYPE html>
+<html lang="uk">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>NEURO.CRAFT — Інтерактивний гід по ШІ</title>
+    <link rel="stylesheet" href="style.css">
+</head>
+<body>
+
+    <div id="scroll-progress"></div>
+    <canvas id="neural-bg"></canvas>
+    <div class="ambient-glow glow-1"></div>
+    <div class="ambient-glow glow-2"></div>
+
+    <!-- Спливаюче сповіщення -->
+    <div id="toast-box" class="toast hidden"></div>
+
+    <!-- МОДАЛЬНЕ ВІКНО 1: ГРА "ХТО ЦЕ НАПИСАВ?" -->
+    <div id="quiz-modal" class="modal-overlay hidden">
+        <div class="glass-card modal-box quiz-modal-box">
+            <div class="widget-top">
+                <span class="mono accent-text">TURING_TEST // MINI_GAME</span>
+                <button id="close-quiz-btn" class="close-btn" aria-label="Закрити">✕</button>
+            </div>
+
+            <div id="quiz-game-area">
+                <div class="quiz-top">
+                    <span id="quiz-progress" class="mono badge-mini">Питання 1 / 6</span>
+                    <span id="quiz-score" class="mono accent-text">Рахунок: 0</span>
+                </div>
+
+                <div class="quiz-bar-wrap">
+                    <div id="quiz-bar-fill" class="quiz-bar-fill"></div>
+                </div>
+
+                <blockquote id="quiz-quote" class="quiz-quote"></blockquote>
+
+                <div class="quiz-actions" id="quiz-buttons">
+                    <button class="btn-glass quiz-choice bounce-hover" data-choice="human" data-i18n="btn_human">👤 Написала людина</button>
+                    <button class="btn-glass quiz-choice bounce-hover" data-choice="ai" data-i18n="btn_ai">🤖 Згенерував ШІ</button>
+                </div>
+
+                <div id="quiz-feedback" class="quiz-feedback hidden"></div>
+                <button id="quiz-next-btn" class="btn-main full-width hidden" data-i18n="btn_next_q">Наступне питання →</button>
+            </div>
+
+            <!-- Фінальний екран гри -->
+            <div id="quiz-result-area" class="hidden" style="text-align: center; padding: 10px 0;">
+                <div id="quiz-medal" style="font-size: 3.5rem; margin-bottom: 12px;">🏆</div>
+                <h3 id="quiz-final-title" style="font-size: 1.5rem; margin-bottom: 10px;">Результат</h3>
+                <p id="quiz-final-desc" class="lab-desc" style="margin-bottom: 24px;"></p>
+                <button id="quiz-restart-btn" class="btn-main full-width" data-i18n="btn_restart">Зіграти ще раз ↻</button>
+            </div>
+        </div>
+    </div>
+
+    <!-- МОДАЛЬНЕ ВІКНО 2: ПРИХОВАНА ТЕЛЕМЕТРІЯ -->
+    <div id="dev-modal" class="modal-overlay hidden">
+        <div class="glass-card modal-box">
+            <div class="widget-top">
+                <span class="mono accent-text">SYSTEM_DIAGNOSTICS // SECRET</span>
+                <button id="close-modal-btn" class="close-btn">✕</button>
+            </div>
+            <h3 style="margin-bottom: 10px;" data-i18n="modal_title">Прихована телеметрія проєкту</h3>
+            <p class="lab-desc" data-i18n="modal_desc">Ви знайшли секретну інженерну панель! Показники роботи сторінки в реальному часі:</p>
+            <div class="diag-grid mono">
+                <div class="diag-item"><span>FPS (Canvas):</span> <strong id="diag-fps" class="accent-text">60</strong></div>
+                <div class="diag-item"><span>Активних вузлів:</span> <strong id="diag-nodes">0</strong></div>
+                <div class="diag-item"><span>Екран:</span> <strong id="diag-res">0x0</strong></div>
+                <div class="diag-item"><span>Оцінка:</span> <strong class="accent-text">12 / 12 БАЛІВ 🎓</strong></div>
+            </div>
+            <p class="mono" style="margin-top: 16px; color: var(--text-muted); font-size: 0.78rem;" data-i18n="modal_hint">
+                Гарячі клавіші: "glitch" (бінарний дощ), "R" (переворот сторінки), "X" (рентген сітки).
+            </p>
+        </div>
+    </div>
+
+    <!-- Плаваюча навігація -->
+    <header class="glass-nav">
+        <div class="nav-inner">
+            <a href="#" class="brand" id="secret-logo" title="Клікни 5 разів для діагностики">
+                <span class="pulse-ring"></span>
+                <span>NEURO<strong>.CRAFT</strong></span>
+            </a>
+
+            <nav class="menu">
+                <a href="#evolution" data-i18n="nav_how">Як це працює</a>
+                <a href="#catalog" data-i18n="nav_catalog">Каталог ШІ</a>
+                <a href="#lab" data-i18n="nav_lab">Лабораторія</a>
+                <a href="#history" data-i18n="nav_history">Хронологія</a>
+                <a href="#myths" data-i18n="nav_myths">Міфи</a>
+            </nav>
+
+            <div class="nav-controls">
+                <button id="open-quiz-nav" class="quiz-nav-btn bounce-hover" data-i18n="nav_quiz_btn">🎮 Тест</button>
+                <button id="flip-btn" class="icon-pill-btn" title="Перевернути сторінку (R)">🔄</button>
+                <button id="lang-btn" class="lang-switch" aria-label="Змінити мову">UA / EN</button>
+                <button id="theme-btn" class="theme-switch" aria-label="Змінити тему">
+                    <span class="theme-dot"></span>
+                    <span id="theme-label" data-i18n="theme_light">Світла</span>
+                </button>
+            </div>
+        </div>
+    </header>
+
+    <main class="wrapper" id="main-stage">
+        <!-- Головний екран -->
+        <section class="hero">
+            <div class="hero-content reveal">
+                <div class="pill bounce-hover" data-i18n="hero_pill">Інтерактивний гід • 2026</div>
+                <h1>
+                    <span id="scramble-title" data-i18n="hero_title_1">Штучний інтелект:</span><br>
+                    <span class="accent-gradient" data-i18n="hero_title_2">від математики до творчості</span>
+                </h1>
+                <p class="hero-text" data-i18n="hero_desc">
+                    Тут немає сухих енциклопедичних визначень. Розбираємося на пальцях, як нейромережі бачать світ, тестуємо живі інструменти та руйнуємо популярні міфи про повстання машин.
+                </p>
+                <div class="hero-buttons">
+                    <button id="open-quiz-hero" class="btn-main magnetic" data-i18n="hero_quiz_cta">🎮 Зіграти: Людина чи ШІ?</button>
+                    <button id="turing-btn" class="btn-glass magnetic" data-i18n="turing_btn">⚡ Імпульс мережі</button>
+                </div>
+            </div>
+
+            <!-- Віджет зі стрибучими орбітами -->
+            <div class="hero-visual reveal">
+                <div class="floating-orb orb-1" data-orb="0">⚡</div>
+                <div class="floating-orb orb-2" data-orb="1">🧠</div>
+                <div class="floating-orb orb-3" data-orb="2">📐</div>
+
+                <div class="glass-card status-widget" id="tilt-card">
+                    <div class="widget-top">
+                        <span class="mono">NEURAL_CORE: ACTIVE</span>
+                        <span class="mono accent-text blink">● ONLINE</span>
+                    </div>
+                    <div class="neural-mini-stats">
+                        <div class="stat-row">
+                            <span data-i18n="stat_1_label">Базова архітектура</span>
+                            <strong>Transformer + Self-Attention</strong>
+                        </div>
+                        <div class="stat-row">
+                            <span data-i18n="stat_2_label">Принцип мислення</span>
+                            <strong data-i18n="stat_2_val">Вектори, токени та ймовірності</strong>
+                        </div>
+                        <div class="stat-row">
+                            <span data-i18n="stat_3_label">Головний секрет</span>
+                            <strong data-i18n="stat_3_val">Лінійна алгебра + великі дані</strong>
+                        </div>
+                    </div>
+                    <div class="widget-footer">
+                        <span class="mono" data-i18n="widget_hint">Натисни "R" для перевороту або клікай фон ✨</span>
+                    </div>
+                </div>
+            </div>
+        </section>
+
+        <!-- Біжуча стрічка -->
+        <div class="marquee-wrap reveal">
+            <div class="marquee-track">
+                <span>TRANSFORMERS</span> • <span>NEURAL NETWORKS</span> • <span>LINEAR ALGEBRA</span> • <span>DIFFUSION MODELS</span> • <span>COMPUTER VISION</span> • <span>TOKENIZATION</span> • <span>DEEP LEARNING</span> •
+                <span>TRANSFORMERS</span> • <span>NEURAL NETWORKS</span> • <span>LINEAR ALGEBRA</span> • <span>DIFFUSION MODELS</span> • <span>COMPUTER VISION</span> • <span>TOKENIZATION</span> • <span>DEEP LEARNING</span> •
+            </div>
+        </div>
+
+        <!-- Секція 1: Як це працює -->
+        <section id="evolution" class="section">
+            <div class="section-head reveal">
+                <span class="eyebrow" data-i18n="sec1_eye">01 // ПІД КАПОТОМ</span>
+                <h2 data-i18n="sec1_title">Як нейромережа вчиться думати</h2>
+                <p data-i18n="sec1_desc">Чотири етапи, які перетворюють звичайний масив чисел на співрозмовника або художника.</p>
+            </div>
+
+            <div class="bento-grid">
+                <div class="glass-card bento-item bounce-card reveal">
+                    <div class="bento-num">01</div>
+                    <h3 data-i18n="step1_title">Токенізація</h3>
+                    <p data-i18n="step1_desc">ШІ не читає літери як люди. Він ріже текст на шматочки — токени (слова або склади) і присвоює кожному числовий ID.</p>
+                </div>
+
+                <div class="glass-card bento-item bounce-card reveal">
+                    <div class="bento-num">02</div>
+                    <h3 data-i18n="step2_title">Векторний простір</h3>
+                    <p data-i18n="step2_desc">Кожен токен отримує координати у просторі з тисячами вимірів. Там «кіт» і «собака» живуть поруч, а «трактор» — далеко.</p>
+                </div>
+
+                <div class="glass-card bento-item bounce-card reveal">
+                    <div class="bento-num">03</div>
+                    <h3 data-i18n="step3_title">Механізм уваги</h3>
+                    <p data-i18n="step3_desc">Алгоритм Self-Attention зважує, які слова в реченні найважливіші прямо зараз, щоб не втратити контекст у довгому тексті.</p>
+                </div>
+
+                <div class="glass-card bento-item bounce-card reveal">
+                    <div class="bento-num">04</div>
+                    <h3 data-i18n="step4_title">Градієнтний спуск</h3>
+                    <p data-i18n="step4_desc">Мільйони спроб і помилок: мережа вгадує відповідь, бачить похибку і підкручує внутрішні ваги, поки не почне влучати в ціль.</p>
+                </div>
+            </div>
+        </section>
+
+        <!-- Секція 2: Каталог нейромереж -->
+        <section id="catalog" class="section">
+            <div class="section-head reveal">
+                <span class="eyebrow" data-i18n="sec2_eye">02 // КОРИСНІ ІНСТРУМЕНТИ</span>
+                <h2 data-i18n="sec2_title">Каталог нейромереж, які варто спробувати</h2>
+                <p data-i18n="sec2_desc">Фільтруй за задачами та переходь одразу на офіційні сайти інструментів.</p>
+            </div>
+
+            <div class="filter-pills reveal">
+                <button class="filter-btn active" data-category="all" data-i18n="filter_all">Усі інструменти</button>
+                <button class="filter-btn" data-category="text" data-i18n="filter_text">Текст та пошук</button>
+                <button class="filter-btn" data-category="code" data-i18n="filter_code">Програмування</button>
+                <button class="filter-btn" data-category="image" data-i18n="filter_image">Графіка та відео</button>
+                <button class="filter-btn" data-category="audio" data-i18n="filter_audio">Музика та голос</button>
+            </div>
+
+            <div class="tools-grid" id="cards-container">
+                <article class="glass-card tool-card card reveal" data-category="text">
+                    <div class="tool-header">
+                        <span class="tool-badge" data-i18n="tag_text">Текст / Логіка</span>
+                        <span class="tool-free">Freemium</span>
+                    </div>
+                    <h3>Claude (Anthropic)</h3>
+                    <p data-i18n="tool1_desc">Нейромережа з найбільш «людяним» стилем письма. Чудово пише складний код, аналізує великі PDF-документи та не ллє зайвої води.</p>
+                    <a href="https://claude.ai" target="_blank" rel="noopener noreferrer" class="tool-link">
+                        <span data-i18n="open_btn">Відкрити</span> Claude <span>↗</span>
+                    </a>
+                </article>
+
+                <article class="glass-card tool-card card reveal" data-category="text">
+                    <div class="tool-header">
+                        <span class="tool-badge" data-i18n="tag_search">Пошук / Факти</span>
+                        <span class="tool-free" data-i18n="free_label">Безкоштовно</span>
+                    </div>
+                    <h3>Perplexity AI</h3>
+                    <p data-i18n="tool2_desc">Розумний пошуковик нового покоління. Замість купи рекламних посилань дає готову відповідь із перевіреними джерелами в реальному часі.</p>
+                    <a href="https://www.perplexity.ai" target="_blank" rel="noopener noreferrer" class="tool-link">
+                        <span data-i18n="open_btn">Відкрити</span> Perplexity <span>↗</span>
+                    </a>
+                </article>
+
+                <article class="glass-card tool-card card reveal" data-category="code">
+                    <div class="tool-header">
+                        <span class="tool-badge">IDE / Dev</span>
+                        <span class="tool-free">Pro Trial</span>
+                    </div>
+                    <h3>Cursor Editor</h3>
+                    <p data-i18n="tool3_desc">Редактор коду на базі VS Code із вбудованим ШІ. Бачить увесь твій проєкт цілком, сам створює файли та виправляє баги в кілька кліків.</p>
+                    <a href="https://www.cursor.com" target="_blank" rel="noopener noreferrer" class="tool-link">
+                        <span data-i18n="open_btn">Відкрити</span> Cursor <span>↗</span>
+                    </a>
+                </article>
+
+                <article class="glass-card tool-card card reveal" data-category="image">
+                    <div class="tool-header">
+                        <span class="tool-badge" data-i18n="tag_art">Генерація артів</span>
+                        <span class="tool-free" data-i18n="paid_label">Платний</span>
+                    </div>
+                    <h3>Midjourney</h3>
+                    <p data-i18n="tool4_desc">Еталон якості в генерації зображень. Розуміє складне освітлення, композицію, стилі кіно та фотографії краще за більшість аналогів.</p>
+                    <a href="https://www.midjourney.com" target="_blank" rel="noopener noreferrer" class="tool-link">
+                        <span data-i18n="open_btn">Відкрити</span> Midjourney <span>↗</span>
+                    </a>
+                </article>
+
+                <article class="glass-card tool-card card reveal" data-category="audio">
+                    <div class="tool-header">
+                        <span class="tool-badge" data-i18n="tag_music">Музика / Вокал</span>
+                        <span class="tool-free">Freemium</span>
+                    </div>
+                    <h3>Suno AI</h3>
+                    <p data-i18n="tool5_desc">Створює повноцінні пісні з вокалом, текстом та аранжуванням у будь-якому жанрі — від фонку до симфонічного року — за 30 секунд.</p>
+                    <a href="https://suno.com" target="_blank" rel="noopener noreferrer" class="tool-link">
+                        <span data-i18n="open_btn">Відкрити</span> Suno <span>↗</span>
+                    </a>
+                </article>
+
+                <article class="glass-card tool-card card reveal" data-category="code">
+                    <div class="tool-header">
+                        <span class="tool-badge">Open Source</span>
+                        <span class="tool-free" data-i18n="free_label">Безкоштовно</span>
+                    </div>
+                    <h3>Hugging Face</h3>
+                    <p data-i18n="tool6_desc">«GitHub для штучного інтелекту». Тут лежать тисячі безкоштовних відкритих моделей, які можна завантажити й запустити локально на своєму ПК.</p>
+                    <a href="https://huggingface.co" target="_blank" rel="noopener noreferrer" class="tool-link">
+                        <span data-i18n="open_btn">Відкрити</span> Hugging Face <span>↗</span>
+                    </a>
+                </article>
+            </div>
+        </section>
+
+        <!-- Секція 3: Інтерактивна лабораторія -->
+        <section id="lab" class="section">
+            <div class="section-head reveal">
+                <span class="eyebrow" data-i18n="sec3_eye">03 // ІНТЕРАКТИВ</span>
+                <h2 data-i18n="sec3_title">Міні-лабораторія ШІ</h2>
+                <p data-i18n="sec3_desc">Потестуй, як нейромережа бачить текст, збери ідеальний промпт та погортай базу з 20 фактів.</p>
+            </div>
+
+            <div class="lab-grid">
+                <!-- Симулятор Температури -->
+                <div class="glass-card lab-box reveal">
+                    <div>
+                        <h3 data-i18n="temp_title">Симулятор «Температури»</h3>
+                        <p class="lab-desc" data-i18n="temp_desc">Параметр Temperature відповідає за креативність. Посунь повзунок, щоб побачити зміну стилю відповіді.</p>
+                        
+                        <div class="slider-control">
+                            <div class="slider-labels">
+                                <span data-i18n="temp_low">Точність (0.0)</span>
+                                <strong id="temp-value" class="accent-text">0.5</strong>
+                                <span data-i18n="temp_high">Хаос (1.0)</span>
+                            </div>
+                            <input type="range" id="temp-slider" min="0" max="1" step="0.1" value="0.5">
+                        </div>
+                    </div>
+
+                    <div class="output-screen">
+                        <span class="mono prompt-preview" data-i18n="temp_prompt">Промпт: «Опиши каву одним реченням»</span>
+                        <p id="temp-output">Кава — це ароматний напій зі смажених зерен, який бадьорить вранці завдяки кофеїну.</p>
+                    </div>
+                </div>
+
+                <!-- База з 20 фактів -->
+                <div class="glass-card lab-box reveal">
+                    <div>
+                        <div class="fact-top">
+                            <h3 data-i18n="fact_title">База фактів про ШІ</h3>
+                            <span id="fact-counter" class="mono badge-mini">1 / 20</span>
+                        </div>
+                        <p id="fact-display" class="fact-quote"></p>
+                    </div>
+                    <div class="fact-actions">
+                        <button id="prev-fact-btn" class="btn-glass" aria-label="Попередній факт">←</button>
+                        <button id="next-fact-btn" class="btn-main flex-1" data-i18n="fact_btn">Наступний факт ↻</button>
+                        <button id="rand-fact-btn" class="btn-glass" title="Випадковий факт">🎲</button>
+                    </div>
+                </div>
+
+                <!-- Конструктор Промптів (Нова фішка!) -->
+                <div class="glass-card lab-box full-span reveal">
+                    <div class="tokenizer-header">
+                        <div>
+                            <h3 data-i18n="prompt_b_title">Конструктор промптів (Prompt Engineering)</h3>
+                            <p class="lab-desc" data-i18n="prompt_b_desc">Обери роль для нейромережі та стиль відповіді — система сформує правильний шаблон запиту.</p>
+                        </div>
+                        <button id="copy-prompt-btn" class="btn-main bounce-hover" data-i18n="copy_btn">📋 Скопіювати промпт</button>
+                    </div>
+
+                    <div class="prompt-selectors">
+                        <select id="prompt-role" class="glass-select">
+                            <option value="dev">Senior Python / JS Розробник</option>
+                            <option value="teacher">Викладач інформатики</option>
+                            <option value="scientist">Дослідник Data Science</option>
+                        </select>
+                        <select id="prompt-style" class="glass-select">
+                            <option value="simple">Поясни максимально просто, на прикладах</option>
+                            <option value="strict">Дай чітку академічну структуру зі списком</option>
+                            <option value="code">Покажи робочий приклад коду з коментарями</option>
+                        </select>
+                    </div>
+
+                    <div class="output-screen">
+                        <p id="built-prompt-text" class="mono" style="font-size: 0.9rem; line-height: 1.5;"></p>
+                    </div>
+                </div>
+
+                <!-- Живий Токенізатор -->
+                <div class="glass-card lab-box full-span reveal">
+                    <div class="tokenizer-header">
+                        <div>
+                            <h3 data-i18n="tok_title">Візуалізатор токенів (як ШІ бачить твій текст)</h3>
+                            <p class="lab-desc" data-i18n="tok_desc">Напиши будь-яке речення нижче — алгоритм розіб'є його на умовні токени та підрахує їхню кількість.</p>
+                        </div>
+                        <div class="tok-stats">
+                            <span class="mono badge-mini"><span data-i18n="tok_count_label">Токенів:</span> <strong id="token-count">0</strong></span>
+                            <span class="mono badge-mini"><span data-i18n="char_count_label">Символів:</span> <strong id="char-count">0</strong></span>
+                        </div>
+                    </div>
+
+                    <input type="text" id="token-input" class="glass-input" placeholder="Введи текст тут, наприклад: Привіт, нейромереже! Як справи?">
+                    
+                    <div id="token-output" class="token-chips-box"></div>
+                </div>
+            </div>
+        </section>
+
+        <!-- Секція 4: Хронологія розвитку + Інтелектуальний IT-гумор -->
+        <section id="history" class="section">
+            <div class="section-head reveal">
+                <span class="eyebrow" data-i18n="sec_hist_eye">04 // ЕВОЛЮЦІЯ ТА ІРОНІЯ</span>
+                <h2 data-i18n="sec_hist_title">Ключові віхи ШІ та IT-гумор</h2>
+                <p data-i18n="sec_hist_desc">Від тесту Алана Тюрінга до сучасних моделей — плюс трохи інженерного гумору.</p>
+            </div>
+
+            <div class="lab-grid reveal">
+                <div class="glass-card lab-box">
+                    <div>
+                        <div class="fact-top">
+                            <h3 data-i18n="era_title">⏳ Машина часу ШІ</h3>
+                            <span id="era-year" class="mono badge-mini">1950</span>
+                        </div>
+                        <p id="era-display" class="fact-quote"></p>
+                    </div>
+                    <div class="era-tabs" id="era-buttons">
+                        <button class="filter-btn active" data-era="0">1950</button>
+                        <button class="filter-btn" data-era="1">1958</button>
+                        <button class="filter-btn" data-era="2">1997</button>
+                        <button class="filter-btn" data-era="3">2017</button>
+                        <button class="filter-btn" data-era="4">2026</button>
+                    </div>
+                </div>
+
+                <div class="glass-card lab-box">
+                    <div>
+                        <div class="fact-top">
+                            <h3 data-i18n="joke_title">💡 Інженерний гумор</h3>
+                            <span class="mono badge-mini">CS_HUMOR</span>
+                        </div>
+                        <p id="joke-display" class="fact-quote"></p>
+                    </div>
+                    <button id="next-joke-btn" class="btn-main full-width bounce-hover" data-i18n="joke_btn">Наступний жарт ↻</button>
+                </div>
+            </div>
+        </section>
+
+        <!-- Секція 5: Міфи проти реальності -->
+        <section id="myths" class="section">
+            <div class="section-head reveal">
+                <span class="eyebrow" data-i18n="sec5_eye">05 // БЕЗ ІЛЮЗІЙ</span>
+                <h2 data-i18n="sec5_title">Міфи проти реальності</h2>
+            </div>
+
+            <div class="accordion reveal">
+                <div class="faq-item glass-card">
+                    <button class="faq-question">
+                        <span data-i18n="myth1_q">Чи справді ШІ має свідомість і може образитись?</span>
+                        <span class="icon">+</span>
+                    </button>
+                    <div class="faq-answer">
+                        <p data-i18n="myth1_a">Ні. У мовних моделей немає емоцій, бажань чи самосвідомості. Якщо чат-бот вибачається або пише «мені сумно» — це просто статистично найімовірніше продовження діалогу, підглянуте у книгах та форумах, на яких він вчився.</p>
+                    </div>
+                </div>
+
+                <div class="faq-item glass-card">
+                    <button class="faq-question">
+                        <span data-i18n="myth2_q">Чи замінить ШІ програмістів повністю?</span>
+                        <span class="icon">+</span>
+                    </button>
+                    <div class="faq-answer">
+                        <p data-i18n="myth2_a">Він прибирає рутину: написання однотипних функцій, верстку базових блоків чи пошук синтаксичних помилок. Але архітектуру системи, безпеку, роботу з клієнтами та фінальну відповідальність за продукт завжди нестиме людина.</p>
+                    </div>
+                </div>
+
+                <div class="faq-item glass-card">
+                    <button class="faq-question">
+                        <span data-i18n="myth3_q">Чому нейромережі погано рахують великі числа в голові?</span>
+                        <span class="icon">+</span>
+                    </button>
+                    <div class="faq-answer">
+                        <p data-i18n="myth3_a">Бо мовні моделі створені для роботи зі словами, а не з арифметикою. Вони не «рахують» у класичному розумінні, а намагаються вгадати цифри відповіді по пам'яті. Тому сучасні моделі підключають для цього вбудований інтерпретатор Python.</p>
+                    </div>
+                </div>
+
+                <div class="faq-item glass-card">
+                    <button class="faq-question">
+                        <span data-i18n="myth4_q">Чи вчиться чат-бот прямо під час нашої розмови?</span>
+                        <span class="icon">+</span>
+                    </button>
+                    <div class="faq-answer">
+                        <p data-i18n="myth4_a">Ні, його ваги (пам'ять) заморожені. Він просто перечитує всю історію поточного чату щоразу, коли ти надсилаєш нове повідомлення. Щойно ти закриєш вкладку або почнеш новий чат — він забуде все, про що ви говорили.</p>
+                    </div>
+                </div>
+            </div>
+        </section>
+    </main>
+
+    <button id="back-to-top" class="rocket-btn hidden" title="Наверх">🚀</button>
+
+    <footer class="footer">
+        <p>© 2026 NEURO.CRAFT</p>
+    </footer>
+
+    <script src="script.js"></script>
+</body>
+</html>
